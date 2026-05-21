@@ -17,6 +17,11 @@ StandardError=journal
 # may make the source tree read-only at runtime.
 Environment=PYTHONDONTWRITEBYTECODE=1
 
+# Endpoint URL etc. — written by deploy/install.sh on first install.
+# `-` makes the file optional so a fresh service won't refuse to start
+# (the daemon will fail-fast at fetch time with a clear message).
+EnvironmentFile=-/etc/default/ratp-dashboard
+
 # --- Hardening (always safe for this workload) ---
 NoNewPrivileges=true
 PrivateTmp=true

@@ -34,6 +34,16 @@ git -C "$WAVESHARE_DIR" fetch --quiet origin "$WAVESHARE_SHA"
 git -C "$WAVESHARE_DIR" checkout --quiet "$WAVESHARE_SHA"
 "$PROJECT_DIR/.venv/bin/pip" install "$WAVESHARE_DIR/RaspberryPi_JetsonNano/python"
 
+echo "==> Endpoint configuration"
+ENV_FILE="/etc/default/$SERVICE_NAME"
+if sudo test -f "$ENV_FILE"; then
+  echo "    $ENV_FILE already exists, leaving alone."
+else
+  read -r -p "    API URL (DASHBOARD_API_URL): " api_url
+  printf 'DASHBOARD_API_URL=%s\n' "$api_url" | sudo tee "$ENV_FILE" > /dev/null
+  sudo chmod 644 "$ENV_FILE"
+fi
+
 echo "==> systemd unit"
 sudo cp "$PROJECT_DIR/deploy/$SERVICE_NAME.service" "/etc/systemd/system/$SERVICE_NAME.service"
 sudo systemctl daemon-reload
