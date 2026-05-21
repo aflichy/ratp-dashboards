@@ -1,0 +1,48 @@
+[Unit]
+Description=RATP ePaper dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/ratp-dashboards/pi-epaper
+ExecStart=/home/pi/ratp-dashboards/pi-epaper/.venv/bin/python -m dashboard run --interval 60
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Skip writing .pyc cache files — pairs with the hardening below that
+# may make the source tree read-only at runtime.
+Environment=PYTHONDONTWRITEBYTECODE=1
+
+# --- Hardening (always safe for this workload) ---
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=false
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+# --- Hardening (verify on real hardware before enabling) ---
+# These restrict filesystem writes hard. Pi-side test required:
+# the Waveshare driver hits /dev/spidev0.0 and /dev/gpiomem — both
+# need to remain accessible. Uncomment and `systemctl restart` once
+# verified.
+#
+# ProtectSystem=strict
+# ProtectHome=read-only
+# ReadWritePaths=
+# DeviceAllow=/dev/spidev0.0 rw
+# DeviceAllow=/dev/gpiomem rw
+
+[Install]
+WantedBy=multi-user.target
