@@ -34,6 +34,11 @@ git -C "$WAVESHARE_DIR" fetch --quiet origin "$WAVESHARE_SHA"
 git -C "$WAVESHARE_DIR" checkout --quiet "$WAVESHARE_SHA"
 "$PROJECT_DIR/.venv/bin/pip" install "$WAVESHARE_DIR/RaspberryPi_JetsonNano/python"
 
+# Pi-only runtime deps the Waveshare lib needs but doesn't declare.
+# Kept out of requirements.txt so Mac dev (where these don't build)
+# stays unblocked.
+"$PROJECT_DIR/.venv/bin/pip" install spidev RPi.GPIO
+
 echo "==> Endpoint configuration"
 ENV_FILE="/etc/default/$SERVICE_NAME"
 if sudo test -f "$ENV_FILE"; then
