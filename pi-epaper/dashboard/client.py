@@ -55,6 +55,11 @@ class Snapshot:
 
 
 def fetch() -> Snapshot:
+    if not API_URL:
+        raise RuntimeError(
+            "DASHBOARD_API_URL is not set. Export it in your shell, or on the "
+            "Pi set it in /etc/default/ratp-dashboard (see deploy/install.sh)."
+        )
     response = requests.get(
         API_URL,
         headers={"Accept": "application/json"},

@@ -38,10 +38,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# Point the client at your endpoint (or skip and use --offline below)
+export DASHBOARD_API_URL=https://your-host/api/spring/transport
+
 # Render from the live API
 python -m dashboard preview
 
-# Render offline (static fixture, no network)
+# Render offline (static fixture, no network — no env var needed)
 python -m dashboard preview --offline
 
 # Custom output path
@@ -92,7 +95,10 @@ bash deploy/install.sh
 2. Verify the SPI kernel module is loaded
 3. Create a venv and install Python deps (pinned to specific versions in `requirements.txt`)
 4. Clone the official Waveshare repo (pinned to a known commit) and pip-install it
-5. Drop the `ratp-dashboard.service` systemd unit in place and start it
+5. Prompt for `DASHBOARD_API_URL` (on first run only) and write `/etc/default/ratp-dashboard`
+6. Drop the `ratp-dashboard.service` systemd unit in place and start it
+
+To change the endpoint later, edit `/etc/default/ratp-dashboard` and `sudo systemctl restart ratp-dashboard`.
 
 The service ships with conservative systemd hardening enabled by default
 (`NoNewPrivileges`, `PrivateTmp`, kernel/cgroup protections, etc.). Stricter
@@ -169,13 +175,13 @@ pi-epaper/
 
 ## Configuration knobs
 
-| Knob                         | Where                                              |
-|------------------------------|----------------------------------------------------|
-| API URL                      | `dashboard/__init__.py` (`API_URL`)                |
-| Panel driver                 | `dashboard/display.py` (`_MODEL`)                  |
-| Refresh interval             | `--interval 60` flag on `run` (systemd unit)       |
-| PNG output                   | `--output preview.png` flag on `preview`           |
-| Stale-data threshold         | `_STALE_AFTER_SECONDS` in `dashboard/__main__.py`  |
+| Knob                         | Where                                                                 |
+|------------------------------|-----------------------------------------------------------------------|
+| API URL                      | `DASHBOARD_API_URL` env var (Mac: shell; Pi: `/etc/default/ratp-dashboard`) |
+| Panel driver                 | `dashboard/display.py` (`_MODEL`)                                     |
+| Refresh interval             | `--interval 60` flag on `run` (systemd unit)                          |
+| PNG output                   | `--output preview.png` flag on `preview`                              |
+| Stale-data threshold         | `_STALE_AFTER_SECONDS` in `dashboard/__main__.py`                     |
 
 ## Troubleshooting
 
