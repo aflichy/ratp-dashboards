@@ -1,0 +1,7 @@
+# Runtime — pinned for reproducibility.
+# Update by re-resolving in a fresh venv and bumping the pins explicitly.
+Pillow==11.3.0
+requests==2.32.5
+
+# Pi-only — installed from the official Waveshare repo on the device,
+# pinned to a known SHA. See deploy/install.sh. Do not install on macOS.
