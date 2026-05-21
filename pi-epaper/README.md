@@ -191,6 +191,23 @@ pi-epaper/
 **`ModuleNotFoundError: No module named 'waveshare_epd'`** — Pi-only: the driver isn't
 in `requirements.txt`, it's installed by `deploy/install.sh` from the official Waveshare repo.
 
+**`ModuleNotFoundError: No module named 'spidev' / 'gpiozero'`** — the Waveshare lib needs
+these at startup but doesn't declare them. `install.sh` installs them as part of the deploy.
+If you ran the script before the fix landed:
+`.venv/bin/pip install spidev gpiozero rpi-lgpio && sudo systemctl restart ratp-dashboard`.
+
+**`RuntimeError: Failed to add edge detection`** — recent Pi OS (Trixie / late Bookworm)
+moves GPIO from sysfs to gpiochip; the legacy `RPi.GPIO` can't follow. Affects every Pi
+model, not just Pi 5. Swap for the drop-in: `pip uninstall RPi.GPIO; pip install rpi-lgpio`
+(fresh installs get this via `install.sh`).
+
+**`OSError: [Errno 22] Invalid argument` from `gpiozero/pins/native.py`** — gpiozero's
+auto-detect picked the legacy sysfs factory. Pin it explicitly by adding
+`GPIOZERO_PIN_FACTORY=lgpio` to `/etc/default/ratp-dashboard` (fresh installs get this).
+
+**`lgpio.error: 'GPIO busy'`** — another process holds the pin, almost always the systemd
+service in its retry loop. `sudo systemctl stop ratp-dashboard` before running a one-shot test.
+
 **Panel stays blank / no refresh** — check that SPI is enabled (`lsmod | grep spi_bcm2835`),
 that no other process is holding the SPI bus, and look at the systemd logs.
 
