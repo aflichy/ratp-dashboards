@@ -191,6 +191,11 @@ pi-epaper/
 **`ModuleNotFoundError: No module named 'waveshare_epd'`** — Pi-only: the driver isn't
 in `requirements.txt`, it's installed by `deploy/install.sh` from the official Waveshare repo.
 
+**`ModuleNotFoundError: No module named 'spidev'` / `'RPi.GPIO'`** — the Waveshare lib
+needs both but doesn't declare them. `install.sh` installs them as part of the deploy.
+If you already ran the script before the fix landed:
+`.venv/bin/pip install spidev RPi.GPIO && sudo systemctl restart ratp-dashboard`.
+
 **Panel stays blank / no refresh** — check that SPI is enabled (`lsmod | grep spi_bcm2835`),
 that no other process is holding the SPI bus, and look at the systemd logs.
 
