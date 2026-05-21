@@ -13,7 +13,7 @@ propagate cleanly to every dashboard.
 | Target             | Status      | Stack                          | Details                              |
 |--------------------|-------------|--------------------------------|--------------------------------------|
 | **pi-epaper/**     | in progress | Python · Pillow · Waveshare    | Raspberry Pi + 2.9" ePaper, 296×128  |
-| **ios-widget/**    | planned     | Swift · WidgetKit              | iPhone Home Screen widget            |
+| **ios-widget/**    | Scriptable shipped · WidgetKit planned | JS (Scriptable) · Swift | iPhone Home Screen widget |
 | **esp32/**         | planned     | C++ · PlatformIO (likely)      | ESP32 + display (model TBD)          |
 
 ## Architecture
