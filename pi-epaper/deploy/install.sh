@@ -8,7 +8,11 @@ SERVICE_NAME="ratp-dashboard"
 
 echo "==> System packages"
 sudo apt-get update
-sudo apt-get install -y python3-venv python3-pip libopenjp2-7 fonts-dejavu-core
+# swig + python3-dev + liblgpio-dev are needed so pip can build the lgpio
+# C extension (used by rpi-lgpio below) when no prebuilt wheel matches
+# this Pi/Python combination.
+sudo apt-get install -y python3-venv python3-pip python3-dev swig \
+  liblgpio-dev libopenjp2-7 fonts-dejavu-core
 
 echo "==> SPI enabled?"
 if ! lsmod | grep -q spi_bcm2835; then
@@ -37,7 +41,14 @@ git -C "$WAVESHARE_DIR" checkout --quiet "$WAVESHARE_SHA"
 # Pi-only runtime deps the Waveshare lib needs but doesn't declare.
 # Kept out of requirements.txt so Mac dev (where these don't build)
 # stays unblocked.
-"$PROJECT_DIR/.venv/bin/pip" install spidev RPi.GPIO
+#   spidev     — SPI bus access
+#   gpiozero   — used by the current Waveshare commit for GPIO setup
+#   rpi-lgpio  — drop-in for RPi.GPIO that uses the lgpio backend; needed
+#                on any Pi running a recent kernel (Trixie / Bookworm-late)
+#                where the legacy RPi.GPIO can't add edge detection
+#                because GPIO moved from sysfs to gpiochip. Works on all
+#                Pi models.
+"$PROJECT_DIR/.venv/bin/pip" install spidev gpiozero rpi-lgpio
 
 echo "==> Endpoint configuration"
 ENV_FILE="/etc/default/$SERVICE_NAME"
@@ -45,7 +56,14 @@ if sudo test -f "$ENV_FILE"; then
   echo "    $ENV_FILE already exists, leaving alone."
 else
   read -r -p "    API URL (DASHBOARD_API_URL): " api_url
-  printf 'DASHBOARD_API_URL=%s\n' "$api_url" | sudo tee "$ENV_FILE" > /dev/null
+  sudo tee "$ENV_FILE" > /dev/null <<EOF
+DASHBOARD_API_URL=$api_url
+# Force gpiozero onto the lgpio backend. Auto-detection picks the legacy
+# sysfs ('native') factory on recent kernels (Bookworm/Trixie) where the
+# GPIO interface moved to gpiochip — pinning lgpio here avoids the fall-
+# back and the cryptic OSError it produces.
+GPIOZERO_PIN_FACTORY=lgpio
+EOF
   sudo chmod 644 "$ENV_FILE"
 fi
 
